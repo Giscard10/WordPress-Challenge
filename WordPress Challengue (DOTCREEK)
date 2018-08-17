@@ -1,0 +1,101 @@
+Code for the custom post type challenge (2):
+
+<?php
+
+add_action( 'init', 'WordPress_Challenge_cpt' );
+
+function WordPress_Challenge_cpt() {
+
+register_post_type( 'Job Postings', array(
+  'labels' => array(
+    'name' => 'Job Postings',
+    'singular_name' => 'Job Posting',
+   ),
+  'description' => 'The Job Postings with Post Date and Country',
+  'public' => true,
+  'menu_position' => 20,
+  'supports' => array( 'title', 'editor', 'date')
+));
+
+add_action( 'add_meta_boxes', 'country_dropdown_metabox' );
+
+add_action( 'save_post', 'country_dropdown_save' );
+
+
+function country_dropdown_metabox() {
+    add_meta_box( 
+        'country_dropdown', 
+        __( 'Country', 'WordPress_Challenge' ),
+        'country_dropdown_display', 
+        'post'   // post type
+    );
+}
+
+function country_dropdown_display( $post ) {
+  wp_nonce_field( basename( __FILE__ ), 'country_dropdown_nonce' );
+  $dropdown_value = get_post_meta( get_the_ID(), 'country_dropdown', true );
+    <select name="voodoo_dropdown" id="voodoo_dropdown">
+        <option value="Costa Rica" <?php if($dropdown_value == 'Costa Rica') echo 'selected'; ?>>Costa Rica</option>
+        <option value="Nicaragua" <?php if($dropdown_value == 'Nicaragua') echo 'selected'; ?>>Nicaragua</option>
+    </select>
+
+}
+
+function voodoo_dropdown_save( $post_id ) {
+  if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
+      return;
+
+  if ( !wp_verify_nonce( $_POST['country_dropdown_nonce'], basename( __FILE__ ) ) )
+      return;
+
+
+  // Check permissions
+  if ( 'page' == $_POST['post_type'] ) 
+  {
+    if ( !current_user_can( 'edit_page', $post_id ) )
+        return;
+  }
+  else
+  {
+    if ( !current_user_can( 'edit_post', $post_id ) )
+        return;
+  }
+
+  $new_value = $_POST['country_dropdown'];
+  update_post_meta( $post_id, 'country_dropdown', $new_value );
+}
+
+}
+
+
+
+2- Code that will show the current date in the specific format: DD-MM-YYYY(3)
+
+<?php
+date_default_timezone_set('UTC');
+
+echo date("l");
+echo date('re metro Y');
+?>
+
+3- php script that show the list of Job Postings and connect to the API WordPress(4)
+
+<?php 
+$wpb_all_query = new WP_Query(array('post_type'=>'post', 'post_status'=>'publish', 'posts_per_page'=>-1)); ?>
+ 
+<?php if ( $wpb_all_query->have_posts() ) : ?>
+ 
+<ul>
+ 
+    <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->WordPress_Challenge(); ?>
+        <li><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></li>
+    <?php endwhile; ?>
+    
+ 
+</ul>
+ 
+    <?php wp_reset_postdata(); ?>
+ 
+<?php else : ?>
+    <p><?php _e( 'Sorry, no posts matched your criteria.' ); ?></p>
+<?php endif; ?>
