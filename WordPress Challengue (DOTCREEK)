@@ -34,14 +34,14 @@ function country_dropdown_metabox() {
 function country_dropdown_display( $post ) {
   wp_nonce_field( basename( __FILE__ ), 'country_dropdown_nonce' );
   $dropdown_value = get_post_meta( get_the_ID(), 'country_dropdown', true );
-    <select name="voodoo_dropdown" id="voodoo_dropdown">
+    <select name="country_dropdown" id="country_dropdown">
         <option value="Costa Rica" <?php if($dropdown_value == 'Costa Rica') echo 'selected'; ?>>Costa Rica</option>
         <option value="Nicaragua" <?php if($dropdown_value == 'Nicaragua') echo 'selected'; ?>>Nicaragua</option>
     </select>
 
 }
 
-function voodoo_dropdown_save( $post_id ) {
+function country_dropdown_save( $post_id ) {
   if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
       return;
 
